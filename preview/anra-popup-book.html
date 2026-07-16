@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ANRA Collective — A Pop-Up Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@400;500;600&family=Shantell+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16181d; --paper:#f6f1e7; --paper-deep:#ede5d4; --foil:#c9a227; --foil-b:#e8c96a; --cream:#fbf8f1;
+  --fd:'Fraunces',Georgia,serif; --fb:'Inter',system-ui,sans-serif; --fh:'Shantell Sans','Comic Sans MS',cursive;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto}
+body{background:var(--ink);color:var(--paper);font-family:var(--fb);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--foil);color:var(--ink)}
+.paper{background:radial-gradient(120% 90% at 50% 0%,rgba(255,255,255,.55),transparent 60%),var(--paper);position:relative}
+.paper::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+.gutL{background-image:linear-gradient(to left,rgba(60,45,20,.22),rgba(60,45,20,.05) 9%,transparent 18%)}
+.gutR{background-image:linear-gradient(to right,rgba(60,45,20,.22),rgba(60,45,20,.05) 9%,transparent 18%)}
+.foilT{background:linear-gradient(105deg,#8a6a14 0%,var(--foil-b) 30%,#f6e3a3 50%,var(--foil) 70%,#8a6a14 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.foilL{background:linear-gradient(90deg,transparent,var(--foil) 20%,var(--foil-b) 50%,var(--foil) 80%,transparent)}
+.p3d{transform-style:preserve-3d}
+.bfh{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.pageblock{background:repeating-linear-gradient(to bottom,#efe8d8 0px,#efe8d8 2px,#ddd2ba 2.6px,#efe8d8 3.4px)}
+
+/* ————— dust canvas ————— */
+#dust{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* ————— nav ————— */
+#nav{position:fixed;inset:0 0 auto 0;z-index:700;transition:background .5s}
+#nav.scrolled{background:rgba(22,24,29,.7);backdrop-filter:blur(10px)}
+#nav .bar{max-width:1280px;margin:0 auto;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+#nav .mark{display:flex;align-items:baseline;gap:8px;background:none;border:0;cursor:pointer}
+#nav .mark b{font-family:var(--fd);font-weight:660;font-size:19px;color:var(--paper)}
+#nav .mark i{font-style:normal;font-size:9px;font-weight:700;letter-spacing:.34em;text-transform:uppercase}
+#dots{display:flex;align-items:center;gap:10px}
+#dots button{width:16px;height:24px;background:none;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#dots button span{width:6px;height:6px;border-radius:99px;background:rgba(246,241,231,.25);transition:all .3s;display:block}
+#cta{border:1px solid rgba(201,162,39,.6);color:var(--foil-b);border-radius:99px;padding:7px 16px;font-size:12px;font-weight:500;text-decoration:none;transition:all .3s var(--ease)}
+#cta:hover{background:var(--foil);color:var(--ink);transform:translateY(-1px)}
+@media(max-width:899px){#dots{display:none}}
+
+/* ————— book stage ————— */
+#scroller{position:relative;z-index:10}
+#stage{position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(90% 70% at 50% 38%,rgba(201,162,39,.07),transparent 60%),radial-gradient(120% 100% at 50% 100%,rgba(0,0,0,.55),transparent 55%)}
+#bookWrap{perspective:2200px;position:relative;width:1150px;height:700px}
+#book{position:relative;width:100%;height:100%;transform-style:preserve-3d}
+#board{position:absolute;top:-12px;bottom:-12px;right:-12px;border-radius:16px;background:#101216;box-shadow:0 60px 120px rgba(0,0,0,.6)}
+#pblock{position:absolute;top:4px;bottom:4px;left:50%;right:0;border-radius:0 8px 8px 0}
+#endpaper{position:absolute;inset:0 0 0 50%;overflow:hidden;border-radius:0 10px 10px 0;background:#ede5d4}
+#endpaper::after{content:"";position:absolute;inset:0;opacity:.35;background-image:radial-gradient(#c9a227 1.1px,transparent 1.1px);background-size:26px 26px}
+#spine{position:absolute;top:0;bottom:0;left:50%;width:3px;transform:translateX(-50%);z-index:500;background:linear-gradient(to bottom,transparent,rgba(0,0,0,.25),transparent)}
+.leaf{position:absolute;left:50%;top:0;width:50%;height:100%;transform-origin:left center;transform-style:preserve-3d}
+.face{position:absolute;inset:0;overflow:hidden}
+.face.front{border-radius:0 10px 10px 0;box-shadow:2px 0 6px rgba(0,0,0,.12)}
+.face.back{transform:rotateY(180deg);border-radius:10px 0 0 10px}
+.shade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
+
+/* cover */
+.coverface{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#16181d;position:relative;overflow:hidden;border-radius:4px 14px 14px 4px}
+.coverface .grain{position:absolute;inset:0;opacity:.6;background:radial-gradient(120% 100% at 30% 0%,#252831,transparent 55%),radial-gradient(120% 120% at 80% 110%,#0d0e12,transparent 50%)}
+.coverface .fr1{position:absolute;inset:26px;border-radius:10px;border:1px solid rgba(201,162,39,.7)}
+.coverface .fr2{position:absolute;inset:34px;border-radius:8px;border:1px solid rgba(201,162,39,.3)}
+.coverface .lock{position:relative;text-align:center}
+.coverface .ast{font-size:34px;margin-bottom:28px}
+.coverface .big{font-family:var(--fd);font-weight:680;font-size:64px;line-height:.95;color:var(--paper)}
+.coverface .sub{margin-top:12px;font-size:15px;font-weight:600;letter-spacing:.55em;text-transform:uppercase}
+.coverface .rule{height:1px;width:160px;margin:32px auto 0}
+.coverface .hand{margin-top:24px;font-family:var(--fh);font-size:15px;color:#c9bfa8}
+.coverface .hint{position:absolute;bottom:36px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:6px;color:#8d8468}
+.coverface .hint em{font-style:normal;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase}
+.coverface .hint b{font-weight:400;font-size:13px;animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* story page */
+.story{height:100%;display:flex;flex-direction:column;justify-content:center;padding:8% 9%;color:#2a2620}
+.story .kick{font-size:13px;font-weight:600;letter-spacing:.28em;text-transform:uppercase}
+.story h2{font-family:var(--fd);font-weight:640;font-size:clamp(26px,2.6vw,40px);line-height:1.06;color:#211d17;margin-top:16px}
+.story .tale{font-family:var(--fd);font-style:italic;font-size:15.5px;line-height:1.65;color:#4a4438;margin-top:20px}
+.story .rule{height:1px;width:64px;margin:20px 0}
+.story .what{font-size:13px;line-height:1.7;color:#5b5546}
+.story .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.story .tags span{border:1px solid;border-radius:99px;padding:4px 12px;font-size:11px;letter-spacing:.02em;color:#5b5546}
+.story .cta{margin-top:28px}
+.story .cta a{display:inline-flex;align-items:center;gap:8px;border-radius:99px;padding:10px 20px;font-size:13px;font-weight:500;color:#fff;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.18);transition:transform .3s var(--ease)}
+.story .cta a:hover{transform:translateY(-2px)}
+.story .pno{position:absolute;bottom:4%;left:9%;font-family:var(--fd);font-size:11px;letter-spacing:.2em;color:#9a917d}
+.rv{opacity:0;transform:translateY(16px)}
+
+/* scene ground (right page) */
+.ground{height:100%;position:relative}
+.ground .horizon{position:absolute;left:8%;right:8%;bottom:12%;height:1px;opacity:.4}
+.ground .fig{position:absolute;right:8%;top:6%;border:1px solid;border-radius:3px;padding:4px 10px;font-family:var(--fh);font-size:10.5px;letter-spacing:.14em;transform:rotate(1.6deg)}
+.ground .pno{position:absolute;bottom:4%;right:9%;font-family:var(--fd);font-size:11px;letter-spacing:.2em;color:#9a917d}
+
+/* fin page */
+.fin{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 10%;color:#2a2620}
+.fin .t{font-family:var(--fd);font-weight:640;font-size:42px}
+.fin .rule{height:1px;width:96px;margin-top:24px}
+.fin p{margin-top:24px;max-width:75%;font-size:12.5px;line-height:1.8;color:#5b5546}
+.fin .hand{margin-top:32px;font-family:var(--fh);font-size:13px;color:#9a917d}
+
+/* pop-up */
+.pu{position:absolute;left:52.5%;top:8%;width:45%;height:74%;transform-style:preserve-3d;pointer-events:none;z-index:60;display:none}
+.pu>div{position:absolute}
+.pu svg{width:100%;height:100%;display:block}
+.pu .sh{bottom:2%;left:10%;width:80%;height:10%;border-radius:50%;background:rgba(0,0,0,.6);filter:blur(20px)}
+.pu .bd{left:0;right:0;top:8%;bottom:6%}
+.pu .wl{bottom:8%;right:50%;width:46%;height:74%;transform-origin:right center;filter:drop-shadow(0 18px 14px rgba(0,0,0,.18))}
+.pu .wr{bottom:8%;left:50%;width:46%;height:74%;transform-origin:left center;filter:drop-shadow(0 18px 14px rgba(0,0,0,.18))}
+.pu .ct{bottom:16%;left:38%;width:24%;height:38%;filter:drop-shadow(0 14px 10px rgba(0,0,0,.2))}
+.pu .fl{bottom:-2%;left:28%;width:44%;height:18%;transform-origin:bottom center;filter:drop-shadow(0 10px 8px rgba(0,0,0,.22))}
+
+/* end card */
+#endcard{position:absolute;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none}
+#endcard .card{position:relative;width:300px;height:420px;border-radius:14px;background:#16181d;box-shadow:0 50px 100px rgba(0,0,0,.65);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+#endcard .frame{position:absolute;inset:18px;border-radius:9px;border:1px solid rgba(201,162,39,.5)}
+#endcard .a{font-size:26px}
+#endcard .n{margin-top:16px;font-family:var(--fd);font-weight:660;font-size:26px;color:var(--paper)}
+#endcard .s{margin-top:4px;font-size:10px;font-weight:600;letter-spacing:.4em;text-transform:uppercase}
+#endcard .btns{margin-top:40px;display:flex;flex-direction:column;gap:12px}
+#endcard .b1{background:var(--foil);color:var(--ink);border-radius:99px;padding:10px 24px;font-size:13px;font-weight:600;text-decoration:none;transition:transform .3s var(--ease)}
+#endcard .b1:hover{transform:translateY(-2px)}
+#endcard .b2{background:none;border:1px solid rgba(201,162,39,.5);color:var(--foil-b);border-radius:99px;padding:10px 24px;font-size:13px;cursor:pointer;transition:background .3s}
+#endcard .b2:hover{background:rgba(201,162,39,.1)}
+
+/* ribbon */
+#ribbon{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:610;pointer-events:none;
+  background:rgba(0,0,0,.4);backdrop-filter:blur(10px);border-radius:99px;padding:8px 20px;
+  font-family:var(--fd);font-size:11.5px;letter-spacing:.12em;color:#d8cfb8;opacity:0;transition:opacity .5s}
+#ribbon b{color:var(--foil);font-weight:500}
+#ribbon i{font-style:normal;opacity:.4;margin:0 8px}
+
+/* ————— flat edition (mobile / reduced motion) ————— */
+#flat{display:none;position:relative;z-index:10;max-width:640px;margin:0 auto;padding:112px 20px 96px}
+#flat .coverCard{position:relative;overflow:hidden;border-radius:16px;background:#16181d;padding:64px 32px;text-align:center;margin-bottom:56px}
+#flat .coverCard .frame{position:absolute;inset:16px;border-radius:12px;border:1px solid rgba(201,162,39,.5)}
+#flat .coverCard .cbig{font-family:var(--fd);font-weight:680;font-size:52px;line-height:1;color:var(--paper);margin-top:16px}
+#flat .coverCard .s{margin-top:8px;font-size:12px;font-weight:600;letter-spacing:.5em;text-transform:uppercase}
+#flat .coverCard .hand{margin-top:24px;font-family:var(--fh);font-size:15px;color:#c9bfa8}
+#flat article{overflow:hidden;border-radius:16px;color:#2a2620;box-shadow:0 30px 60px rgba(0,0,0,.45);margin-bottom:12px}
+#flat .scene{position:relative;aspect-ratio:16/10}
+#flat .scene>div{position:absolute}
+#flat .scene svg{width:100%;height:100%;display:block}
+#flat .scene .bd{inset:6% 0 0 0}
+#flat .scene .wl{bottom:4%;left:3%;width:45%;height:72%}
+#flat .scene .wr{bottom:4%;right:3%;width:45%;height:72%}
+#flat .scene .ct{bottom:12%;left:40%;width:20%;height:36%}
+#flat .scene .fl{bottom:2%;left:27%;width:46%;height:16%}
+#flat .body{padding:32px 28px}
+#flat .kick{font-size:12px;font-weight:600;letter-spacing:.26em;text-transform:uppercase}
+#flat h2{font-family:var(--fd);font-weight:640;font-size:28px;line-height:1.1;margin-top:8px}
+#flat .tale{font-family:var(--fd);font-style:italic;font-size:15px;line-height:1.65;color:#4a4438;margin-top:16px}
+#flat .what{font-size:13px;line-height:1.7;color:#5b5546;margin-top:16px}
+#flat .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+#flat .tags span{border:1px solid;border-radius:99px;padding:4px 12px;font-size:11px;color:#5b5546}
+#flat .cta{display:inline-flex;align-items:center;gap:8px;border-radius:99px;padding:10px 20px;font-size:13px;font-weight:500;color:#fff;text-decoration:none;margin-top:24px}
+#flat .count{text-align:center;font-size:11px;letter-spacing:.3em;color:#6b6350;margin:12px 0 48px}
+#flat .endCard{position:relative;overflow:hidden;border-radius:16px;background:#16181d;padding:56px 32px;text-align:center}
+#flat .endCard .frame{position:absolute;inset:16px;border-radius:12px;border:1px solid rgba(201,162,39,.4)}
+#flat .endCard .t{font-family:var(--fd);font-weight:640;font-size:24px;color:var(--paper)}
+#flat .endCard p{margin-top:12px;font-size:13px;color:#c9bfa8}
+#flat .endCard a{display:inline-block;margin-top:32px;background:var(--foil);color:var(--ink);border-radius:99px;padding:10px 24px;font-size:13px;font-weight:600;text-decoration:none}
+
+@media (prefers-reduced-motion: reduce){ .coverface .hint b{animation:none} }
+</style>
+</head>
+<body>
+<canvas id="dust" aria-hidden="true"></canvas>
+
+<header id="nav">
+  <div class="bar">
+    <button class="mark" id="homeBtn" aria-label="Back to the cover"><b>ANRA</b><i class="foilT">Collective</i></button>
+    <div id="dots" role="navigation" aria-label="Chapters"></div>
+    <a id="cta" href="mailto:anton.ranil@gmail.com">Get in touch</a>
+  </div>
+</header>
+
+<main>
+  <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">ANRA Collective — a pop-up book portfolio of websites, platforms and campaigns</h1>
+  <div id="scroller">
+    <div id="stage">
+      <div id="vig"></div>
+      <div id="bookWrap"><div id="book"></div></div>
+      <div id="endcard">
+        <div class="card">
+          <div class="frame"></div>
+          <div class="a foilT">✳</div>
+          <div class="n">ANRA</div>
+          <div class="s foilT">Collective</div>
+          <div class="btns">
+            <a class="b1" href="mailto:anton.ranil@gmail.com">Write to the author</a>
+            <button class="b2" id="again">Read it again</button>
+          </div>
+        </div>
+      </div>
+      <div id="ribbon"></div>
+    </div>
+  </div>
+  <div id="flat"></div>
+</main>
+
+<script>
+/* ============ data ============ */
+const CHAPTERS=[
+{id:"prologue",kicker:"Prologue",title:"Once upon a maker…",tale:"There was a builder who couldn't stop building. Websites, platforms, campaigns — each one a little world of its own. This book collects them all in one place.",what:"ANRA Collective is the studio shelf where every project lives. Turn the pages gently — some of them pop.",tags:["Est. Singapore & Malaysia","Designed with Figma + Claude"],accent:"#c9a227",soft:"#f8f0da",scene:"prologue"},
+{id:"briam",kicker:"Chapter One",title:"The Steel Garden",tale:"In which silos and steel structures rise across Asia — and the company that raises them needed a home as solid as its work.",what:"Corporate website for BRIAM Asia, The Bulk Storage Group — silo-based projects and structural steel engineering.",tags:["Corporate site","Next.js + Motion","Live"],url:"https://briam.vercel.app",urlLabel:"briam.vercel.app",accent:"#773dbd",soft:"#efe6fa",scene:"briam"},
+{id:"silbloxx",kicker:"Chapter Two",title:"The Factory That Hired",tale:"A new plant awakens in Ho Chi Minh City, and it needs people. So we built it a voice — loud, orange, and impossible to ignore.",what:"Recruitment microsite for Silbloxx Asia (BRIAM Group) — six open roles, bold industrial design, EN/VN.",tags:["Recruitment","Next.js","Live"],url:"https://silbloxx.vercel.app",urlLabel:"silbloxx.vercel.app",accent:"#ff2e00",soft:"#ffece6",scene:"silbloxx"},
+{id:"myscholar",kicker:"Chapter Three",title:"The Door Nobody Knew About",tale:"No student should miss a scholarship because they didn't know it existed. So every hidden door got a map, and every map is free.",what:"Free platform for Malaysian students — 200+ career pathways, 200+ scholarships, and curated internships.",tags:["EdTech","Supabase","Free forever","Live"],url:"https://myscholar.my",urlLabel:"myscholar.my",accent:"#2456e6",soft:"#e6ecfc",scene:"myscholar"},
+{id:"learnfpa",kicker:"Chapter Four",title:"Twelve Weeks to the Corner Office",tale:"An auditor once crossed the bridge from debits to decisions — then wrote down the map for everyone walking behind them.",what:"LearnFP&A — a free 12-week, self-paced FP&A curriculum for accounting and audit professionals, aligned to AFP FPAC.",tags:["Education","12 weeks","Free","Live"],url:"https://learn-fpa.vercel.app",urlLabel:"learn-fpa.vercel.app",accent:"#0e7a5f",soft:"#e2f2ec",scene:"learnfpa"},
+{id:"trashtalks",kicker:"Chapter Five",title:"Meet the Family You Throw Away",tale:"Five everyday products. Five very different journeys. One shared destination. Your trash has been thinking about us — and it finally speaks.",what:"trashtalks.earth — an interactive waste-awareness campaign for Singapore & Malaysia, with characters, data and a ten-year policy timeline.",tags:["Campaign","Environment","SG / MY","Live"],url:"https://trashtalks.earth",urlLabel:"trashtalks.earth",accent:"#1f8a70",soft:"#e3f2ed",scene:"trashtalks"},
+{id:"myhutan",kicker:"Chapter Six",title:"The Disappearing Green",tale:"Somewhere in the Malaysian jungle, trees are vanishing quietly. This tracker exists to make the quiet very, very loud.",what:"MyHutan — a Malaysian jungle deforestation tracker. Still growing; this chapter is being written.",tags:["Data","Environment","In the works"],accent:"#1c6b3c",soft:"#e4f0e8",scene:"myhutan"},
+{id:"atlascerita",kicker:"Chapter Seven",title:"Where the Old Stories Live",tale:"Hantu and heroes, moonlit legends and mountain spirits — Malaysian folklore, mapped and kept safe from forgetting.",what:"AtlasCerita — an atlas of Malaysian folklore. An early chapter, still being illustrated.",tags:["Culture","Storytelling","In the works"],accent:"#9d174d",soft:"#fbe7ef",scene:"atlascerita"},
+{id:"manamana",kicker:"Chapter Eight",title:"The Mystery Chapter",tale:"Every good book keeps one secret. This page is still being written — ask the author nicely and he might tell you what ManaMana becomes.",what:"ManaMana — under wraps for now. Watch this spread.",tags:["Secret","Coming soon"],accent:"#d63384",soft:"#fce8f1",scene:"manamana"},
+{id:"epilogue",kicker:"Epilogue",title:"Every story needs a next chapter",tale:"Want a website people actually remember? A platform, a campaign, a small world of your own? Let's write yours together.",what:"ANRA Collective works with Figma, Claude and a lot of paper. Say hello — the ink is still wet.",tags:["hello@anra.collective","github.com/ANRACollective"],url:"mailto:anton.ranil@gmail.com",urlLabel:"Write to the author",accent:"#c9a227",soft:"#f8f0da",scene:"epilogue"}
+];
+
+/* ============ paper-cut scenes (SVG strings) ============ */
+const INK="#2a2620", CREAM="#fbf8f1";
+const S=(vb,inner)=>`<svg viewBox="${vb}" aria-hidden="true">${inner}</svg>`;
+function rays(){let s="";for(let i=0;i<12;i++)s+=`<rect x="277" y="8" width="6" height="26" rx="3" fill="#c9a227" transform="rotate(${i*30} 280 120)"/>`;return s}
+function stars(n,m1,m2,f){let s="";for(let i=0;i<n;i++)s+=`<circle cx="${(i*m1)%560}" cy="${(i*m2)%170+14}" r="${i%3===0?4:2.5}" fill="${f}"/>`;return s}
+const SCENES={
+prologue:{
+ backdrop:S("0 0 560 300",`<circle cx="280" cy="120" r="86" fill="#f3dfae"/><circle cx="280" cy="120" r="60" fill="#eccf8b"/>${rays()}<path d="M0 240 Q140 200 280 240 T560 240 V300 H0 Z" fill="#e8dcc0"/>`),
+ left:S("0 0 300 300",`<rect x="60" y="196" width="200" height="30" rx="6" fill="#773dbd"/><rect x="80" y="164" width="180" height="30" rx="6" fill="#2456e6"/><rect x="96" y="132" width="164" height="30" rx="6" fill="#0e7a5f"/><rect x="116" y="100" width="144" height="30" rx="6" fill="#ff2e00"/><rect x="70" y="211" width="14" height="8" rx="2" fill="#5f2f99"/><rect x="90" y="179" width="14" height="8" rx="2" fill="#1a3fae"/><rect x="106" y="147" width="14" height="8" rx="2" fill="#0a5c47"/><rect x="126" y="115" width="14" height="8" rx="2" fill="#c42300"/><rect x="140" y="70" width="120" height="26" rx="6" fill="#d63384"/>`),
+ right:S("0 0 300 300",`<path d="M40 200 Q140 160 240 200 L240 250 Q140 214 40 250 Z" fill="${CREAM}" stroke="${INK}" stroke-width="3"/><path d="M140 172 L140 232" stroke="${INK}" stroke-width="3"/><path d="M80 120 q18 -18 36 0 q-18 6 -36 0" fill="#c9a227"/><path d="M150 84 q18 -18 36 0 q-18 6 -36 0" fill="#e8c96a"/><path d="M210 130 q14 -14 28 0 q-14 5 -28 0" fill="#c9a227"/>`),
+ center:S("0 0 160 160",`<circle cx="80" cy="80" r="56" fill="${INK}"/><text x="80" y="97" text-anchor="middle" font-family="Georgia,serif" font-size="52" fill="#e8c96a">A</text>`)
+},
+briam:{
+ backdrop:S("0 0 560 300",`<circle cx="430" cy="70" r="44" fill="#e8c96a"/><path d="M0 250 L110 190 L220 250 L330 200 L440 250 L560 210 V300 H0 Z" fill="#cbb8e8"/><path d="M0 272 H560 V300 H0 Z" fill="#a98bd6"/>`),
+ left:S("0 0 300 300",[[60,110,58],[130,90,66],[206,118,54]].map(([x,y,w])=>`<rect x="${x}" y="${y}" width="${w}" height="${260-y}" rx="8" fill="#e9e4ef" stroke="${INK}" stroke-width="3"/><path d="M${x} ${y} Q${x+w/2} ${y-34} ${x+w} ${y}" fill="#773dbd" stroke="${INK}" stroke-width="3"/><line x1="${x+10}" y1="${y+22}" x2="${x+w-10}" y2="${y+22}" stroke="#b9a8d8" stroke-width="4"/><line x1="${x+10}" y1="${y+46}" x2="${x+w-10}" y2="${y+46}" stroke="#b9a8d8" stroke-width="4"/>`).join("")),
+ right:S("0 0 300 300",`<g stroke="#773dbd" stroke-width="6" stroke-linecap="round"><line x1="80" y1="260" x2="80" y2="60"/><line x1="150" y1="260" x2="150" y2="60"/><line x1="80" y1="240" x2="150" y2="200"/><line x1="150" y1="240" x2="80" y2="200"/><line x1="80" y1="180" x2="150" y2="140"/><line x1="150" y1="180" x2="80" y2="140"/><line x1="80" y1="120" x2="150" y2="80"/><line x1="150" y1="120" x2="80" y2="80"/><line x1="80" y1="60" x2="230" y2="60"/><line x1="230" y1="60" x2="230" y2="110"/></g><rect x="214" y="110" width="32" height="26" rx="4" fill="#e8c96a" stroke="${INK}" stroke-width="3"/><rect x="60" y="252" width="110" height="12" rx="5" fill="${INK}"/>`),
+ flap:S("0 0 240 70",`<rect x="0" y="8" width="240" height="54" rx="10" fill="#773dbd"/><text x="120" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="24" fill="${CREAM}" font-style="italic">BRIAM Asia</text>`)
+},
+silbloxx:{
+ backdrop:S("0 0 560 300",`<circle cx="120" cy="80" r="40" fill="#ffdc00"/><path d="M0 260 H560 V300 H0 Z" fill="#f5c9bb"/><circle cx="380" cy="70" r="18" fill="#f0e9dc"/><circle cx="408" cy="52" r="13" fill="#f0e9dc"/><circle cx="430" cy="40" r="9" fill="#f0e9dc"/>`),
+ left:S("0 0 300 300",`<path d="M30 260 V150 L90 110 V150 L150 110 V150 L210 110 V260 Z" fill="#ff2e00" stroke="${INK}" stroke-width="3"/><rect x="52" y="190" width="34" height="34" rx="4" fill="#ffdc00"/><rect x="104" y="190" width="34" height="34" rx="4" fill="#ffdc00"/><rect x="156" y="190" width="34" height="34" rx="4" fill="#ffdc00"/><rect x="222" y="70" width="22" height="190" fill="#c42300" stroke="${INK}" stroke-width="3"/>`),
+ right:S("0 0 300 300",`<rect x="40" y="236" width="130" height="26" rx="8" fill="${INK}"/><g stroke="${INK}" stroke-width="14" stroke-linecap="round"><line x1="90" y1="236" x2="130" y2="150"/><line x1="130" y1="150" x2="200" y2="110"/></g><circle cx="90" cy="236" r="14" fill="#ffdc00" stroke="${INK}" stroke-width="4"/><circle cx="130" cy="150" r="12" fill="#ffdc00" stroke="${INK}" stroke-width="4"/><path d="M200 110 l30 -18 M200 110 l34 6" stroke="${INK}" stroke-width="10" stroke-linecap="round"/><circle cx="246" cy="86" r="10" fill="#ff2e00"/>`),
+ flap:S("0 0 240 70",`<rect x="0" y="8" width="240" height="54" rx="27" fill="#ffdc00"/><text x="120" y="44" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="22" fill="#000">NOW HIRING</text>`)
+},
+myscholar:{
+ backdrop:S("0 0 560 300",`${stars(14,97,53,"#9db6f5")}<path d="M0 252 Q280 210 560 252 V300 H0 Z" fill="#c9d6f8"/>`),
+ left:S("0 0 300 300",`<rect x="70" y="60" width="150" height="200" rx="8" fill="#1a3fae" stroke="${INK}" stroke-width="3"/><path d="M92 84 h106 v176 h-106 z" fill="#fdf6e0"/><path d="M92 84 L40 110 V286 L92 260 Z" fill="#2456e6" stroke="${INK}" stroke-width="3"/><circle cx="80" cy="180" r="6" fill="#e8c96a"/><path d="M145 120 l8 20 20 2 -15 14 5 21 -18 -11 -18 11 5 -21 -15 -14 20 -2 z" fill="#e8c96a"/>`),
+ right:S("0 0 300 300",`<path d="M150 90 L260 140 L150 190 L40 140 Z" fill="${INK}"/><path d="M96 166 v46 q54 30 108 0 v-46" fill="none" stroke="${INK}" stroke-width="16"/><line x1="150" y1="140" x2="238" y2="176" stroke="#e8c96a" stroke-width="5"/><circle cx="238" cy="182" r="9" fill="#e8c96a"/>`),
+ flap:S("0 0 240 70",`<rect x="0" y="8" width="240" height="54" rx="10" fill="#2456e6"/><text x="120" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="${CREAM}" font-style="italic">myscholar.my</text>`)
+},
+learnfpa:{
+ backdrop:S("0 0 560 300",`<path d="M60 240 H500" stroke="#bcded2" stroke-width="4" stroke-linecap="round"/><path d="M60 240 V60" stroke="#bcded2" stroke-width="4" stroke-linecap="round"/><path d="M0 262 H560 V300 H0 Z" fill="#cfe8de"/>`),
+ left:S("0 0 300 300",`<rect x="60" y="190" width="46" height="60" rx="8" fill="#7cc4ab" stroke="${INK}" stroke-width="3"/><rect x="120" y="150" width="46" height="100" rx="8" fill="#3fa286" stroke="${INK}" stroke-width="3"/><rect x="180" y="100" width="46" height="150" rx="8" fill="#0e7a5f" stroke="${INK}" stroke-width="3"/><path d="M70 170 L140 128 L204 76" stroke="${INK}" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M204 76 l-4 22 M204 76 l-22 -2" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>`),
+ right:S("0 0 300 300",`<rect x="60" y="70" width="180" height="170" rx="14" fill="${CREAM}" stroke="${INK}" stroke-width="4"/><rect x="60" y="70" width="180" height="44" rx="14" fill="#0e7a5f"/><circle cx="100" cy="70" r="8" fill="${INK}"/><circle cx="200" cy="70" r="8" fill="${INK}"/><text x="150" y="180" text-anchor="middle" font-family="Georgia,serif" font-size="56" fill="#0e7a5f" font-weight="700">12</text><text x="150" y="216" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" fill="${INK}">WEEKS</text>`),
+ flap:S("0 0 240 70",`<rect x="0" y="8" width="240" height="54" rx="10" fill="#0e7a5f"/><text x="120" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="${CREAM}" font-style="italic">LearnFP&amp;A</text>`)
+},
+trashtalks:{
+ backdrop:S("0 0 560 300",`<path d="M0 250 Q140 214 280 250 T560 250 V300 H0 Z" fill="#bfe3d6"/><circle cx="460" cy="66" r="38" fill="#d9efe6"/>`),
+ left:S("0 0 300 300",(()=>{let dots="";for(let i=0;i<6;i++)dots+=`<circle cx="${116+(i%3)*34}" cy="${228-Math.floor(i/3)*26}" r="9" fill="${INK}"/>`;return `<path d="M90 100 L210 100 L192 260 L108 260 Z" fill="#8fd8c0" stroke="${INK}" stroke-width="4"/><line x1="150" y1="40" x2="162" y2="120" stroke="${INK}" stroke-width="8" stroke-linecap="round"/>${dots}<circle cx="130" cy="150" r="7" fill="${INK}"/><circle cx="176" cy="150" r="7" fill="${INK}"/><path d="M136 180 q17 14 34 0" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`})()),
+ right:S("0 0 300 300",`<path d="M70 120 Q70 84 100 84 L110 60 130 84 170 84 190 60 200 84 Q230 84 230 120 L216 250 Q150 272 84 250 Z" fill="#f0e9dc" stroke="${INK}" stroke-width="4"/><circle cx="128" cy="150" r="7" fill="${INK}"/><circle cx="174" cy="150" r="7" fill="${INK}"/><path d="M132 190 q19 -10 38 0" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`),
+ center:S("0 0 160 160",`<rect x="58" y="52" width="44" height="88" rx="14" fill="#1f8a70" stroke="${INK}" stroke-width="4"/><rect x="68" y="30" width="24" height="24" rx="6" fill="${INK}"/><circle cx="72" cy="86" r="5" fill="${CREAM}"/><circle cx="90" cy="86" r="5" fill="${CREAM}"/><path d="M72 108 q9 8 18 0" stroke="${CREAM}" stroke-width="4" fill="none" stroke-linecap="round"/>`),
+ flap:S("0 0 240 70",`<rect x="0" y="8" width="240" height="54" rx="27" fill="#1f8a70"/><text x="120" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="20" fill="${CREAM}" font-style="italic">hi. we're your trash.</text>`)
+},
+myhutan:{
+ backdrop:S("0 0 560 300",`<path d="M0 220 L90 150 L180 220 L280 140 L380 220 L470 160 L560 220 V300 H0 Z" fill="#bfe0c8"/><path d="M0 258 H560 V300 H0 Z" fill="#8fc9a0"/>`),
+ left:S("0 0 300 300",[[90,150,56],[170,120,70],[240,160,48]].map(([cx,cy,r])=>`<rect x="${cx-8}" y="${cy}" width="16" height="${260-cy}" fill="#7a5230" stroke="${INK}" stroke-width="3"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="#1c6b3c" stroke="${INK}" stroke-width="3"/><circle cx="${cx-r/2.4}" cy="${cy+10}" r="${r/2.2}" fill="#2e8b50"/>`).join("")),
+ right:S("0 0 300 300",`<ellipse cx="110" cy="238" rx="46" ry="16" fill="#a8794e" stroke="${INK}" stroke-width="3"/><rect x="70" y="196" width="80" height="42" fill="#7a5230" stroke="${INK}" stroke-width="3"/><ellipse cx="110" cy="196" rx="40" ry="14" fill="#c9995f" stroke="${INK}" stroke-width="3"/><path d="M110 196 m-24 0 a24 8 0 1 0 48 0" fill="none" stroke="#7a5230" stroke-width="3"/><ellipse cx="210" cy="130" rx="34" ry="26" fill="${INK}"/><circle cx="238" cy="112" r="16" fill="${INK}"/><path d="M250 108 q34 -2 30 16 q-18 8 -32 -4 z" fill="#f5a623" stroke="${INK}" stroke-width="3"/><path d="M240 96 q10 -12 18 -4" stroke="#f5a623" stroke-width="6" fill="none"/><circle cx="240" cy="110" r="3.4" fill="${CREAM}"/><line x1="210" y1="156" x2="210" y2="184" stroke="${INK}" stroke-width="5"/>`),
+ flap:S("0 0 240 70",`<rect x="0" y="8" width="240" height="54" rx="10" fill="#1c6b3c"/><text x="120" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="${CREAM}" font-style="italic">MyHutan</text>`)
+},
+atlascerita:{
+ backdrop:S("0 0 560 300",(()=>{let d="";for(let i=0;i<10;i++)d+=`<circle cx="${(i*131)%560}" cy="${(i*67)%150+12}" r="${i%2?2.5:4}" fill="#e7b8cd"/>`;return `<circle cx="150" cy="86" r="52" fill="#f3d9a4"/><circle cx="132" cy="78" r="44" fill="#fbe7ef"/>${d}<path d="M0 236 Q140 190 280 236 T560 236 V300 H0 Z" fill="#c26493"/>`})()),
+ left:S("0 0 300 300",`<g fill="#5c0f33"><path d="M150 70 q26 0 26 28 q0 20 -14 26 l4 96 q22 4 22 24 l-76 0 q0 -20 22 -24 l4 -96 q-14 -6 -14 -26 q0 -28 26 -28"/><path d="M176 130 q44 10 54 46 q-26 2 -40 -14"/><path d="M124 130 q-44 10 -54 46 q26 2 40 -14"/><path d="M150 74 q4 -26 22 -32 q2 16 -8 26 z"/></g><circle cx="150" cy="98" r="5" fill="#f3d9a4"/><line x1="150" y1="244" x2="150" y2="286" stroke="#5c0f33" stroke-width="6"/>`),
+ right:S("0 0 300 300",`<path d="M50 90 L130 70 L210 90 L250 74 V230 L170 250 L90 230 L50 246 Z" fill="${CREAM}" stroke="${INK}" stroke-width="4"/><path d="M130 70 V230 M210 90 V250" stroke="#e0d3b8" stroke-width="3"/><path d="M70 200 Q110 150 150 170 T240 120" stroke="#9d174d" stroke-width="5" fill="none" stroke-dasharray="2 10" stroke-linecap="round"/><path d="M238 106 l10 22 -22 -6 z" fill="#9d174d"/><circle cx="72" cy="200" r="8" fill="#9d174d"/>`),
+ flap:S("0 0 240 70",`<rect x="0" y="8" width="240" height="54" rx="10" fill="#9d174d"/><text x="120" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="${CREAM}" font-style="italic">AtlasCerita</text>`)
+},
+manamana:{
+ backdrop:S("0 0 560 300",(()=>{let q="";for(let i=0;i<9;i++)q+=`<text x="${(i*149)%520+20}" y="${(i*83)%180+40}" font-size="${i%2?22:34}" fill="#f3b7d4" font-family="Georgia,serif">?</text>`;return `${q}<path d="M0 252 Q280 214 560 252 V300 H0 Z" fill="#f3b7d4"/>`})()),
+ left:S("0 0 300 300",`<rect x="70" y="130" width="160" height="120" rx="8" fill="#d63384" stroke="${INK}" stroke-width="4"/><rect x="60" y="100" width="180" height="40" rx="8" fill="#b02368" stroke="${INK}" stroke-width="4" transform="rotate(-6 150 120)"/><rect x="138" y="100" width="24" height="150" fill="#ffd6ea"/><path d="M150 100 q-30 -40 -8 -52 q18 -8 8 52 M150 100 q30 -40 8 -52 q-18 -8 -8 52" fill="none" stroke="#ffd6ea" stroke-width="8"/>`),
+ right:S("0 0 300 300",`<path d="M150 250 q-56 -50 -56 -110 a56 56 0 1 1 112 0 q0 60 -56 110" fill="#d63384" stroke="${INK}" stroke-width="4"/><text x="150" y="160" text-anchor="middle" font-family="Georgia,serif" font-size="92" fill="${CREAM}" font-weight="700">?</text>`),
+ flap:S("0 0 240 70",`<rect x="0" y="8" width="240" height="54" rx="27" fill="#d63384"/><text x="120" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="20" fill="${CREAM}" font-style="italic">shhh… coming soon</text>`)
+},
+epilogue:{
+ backdrop:S("0 0 560 300",`<circle cx="280" cy="130" r="90" fill="#f3dfae" opacity="0.7"/><path d="M0 250 Q280 206 560 250 V300 H0 Z" fill="#e8dcc0"/>`),
+ left:S("0 0 300 300",`<rect x="50" y="110" width="200" height="130" rx="10" fill="${CREAM}" stroke="${INK}" stroke-width="4"/><path d="M50 120 L150 190 L250 120" fill="none" stroke="${INK}" stroke-width="4"/><circle cx="150" cy="120" r="16" fill="#c9a227" stroke="${INK}" stroke-width="3"/>`),
+ right:S("0 0 300 300",`<path d="M60 240 q60 -30 120 -10 t80 -24" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="1 9"/><g transform="rotate(-38 190 130)"><rect x="160" y="118" width="120" height="24" rx="12" fill="#16181d"/><path d="M160 130 l-34 0 l24 -12 z" fill="#c9a227" stroke="${INK}" stroke-width="2"/></g>`),
+ center:S("0 0 160 160",`<path d="M80 130 q-44 -34 -44 -64 a26 26 0 0 1 44 -18 a26 26 0 0 1 44 18 q0 30 -44 64" fill="#c9a227" stroke="${INK}" stroke-width="4"/>`)
+}
+};
+
+/* ============ timeline ============ */
+const SPREADS=CHAPTERS.length, LEAVES=SPREADS+1;
+const COVER_DWELL=.6, FLIP=1, DWELL=.9, END_LEN=1.6;
+const flipStart=i=>COVER_DWELL+i*(FLIP+DWELL);
+const flipEnd=i=>flipStart(i)+FLIP;
+const TOTAL=flipStart(LEAVES-1)+FLIP+DWELL*.7+END_LEN;
+const END_START=flipEnd(LEAVES-1)+DWELL*.7;
+const BOOK_W=1150, BOOK_H=700, UNIT_VH=55;
+const clamp01=v=>Math.min(1,Math.max(0,v));
+const paperE=t=>1-Math.pow(1-clamp01(t),3);
+const win=(t,a,b)=>paperE((t-a)/(b-a));
+
+/* ============ build helpers ============ */
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+function storyHTML(c,pno){
+  const link=c.url?`<div class="rv cta" data-a="0.68" data-b="1"><a href="${c.url}" ${c.url.startsWith("mailto")?"":'target="_blank" rel="noreferrer"'} style="background:${c.accent}">${esc(c.urlLabel)} <span>↗</span></a></div>`:"";
+  return `<div class="story paper gutR">
+    <div class="rv kick" data-a="0" data-b="0.25" style="color:${c.accent}">${esc(c.kicker)}</div>
+    <h2 class="rv" data-a="0.08" data-b="0.35">${esc(c.title)}</h2>
+    <p class="rv tale" data-a="0.2" data-b="0.5">${esc(c.tale)}</p>
+    <div class="rv rule" data-a="0.35" data-b="0.6" style="background:${c.accent}"></div>
+    <p class="rv what" data-a="0.42" data-b="0.7">${esc(c.what)}</p>
+    <div class="rv tags" data-a="0.55" data-b="0.85">${c.tags.map(t=>`<span style="border-color:${c.accent}55">${esc(t)}</span>`).join("")}</div>
+    ${link}
+    <div class="pno">${pno}</div>
+  </div>`;
+}
+function groundHTML(c,pno){
+  return `<div class="ground paper gutL" style="background:${c.soft}">
+    <div class="horizon" style="background:${c.accent}"></div>
+    <div class="fig" style="border-color:${c.accent}66;color:${c.accent}">fig. ${pno} — ${esc(c.urlLabel||"unpublished")}</div>
+    <div class="pno">${pno}</div>
+  </div>`;
+}
+const coverHTML=`<div class="coverface"><div class="grain"></div><div class="fr1"></div><div class="fr2"></div>
+ <div class="lock"><div class="ast foilT">✳</div><div class="big">ANRA</div><div class="sub foilT">Collective</div><div class="rule foilL"></div><div class="hand">a pop-up portfolio</div></div>
+ <div class="hint"><em>scroll to open</em><b>⌄</b></div></div>`;
+const finHTML=`<div class="fin paper gutR"><div class="t">The End</div><div class="rule foilL"></div>
+ <p>Written, designed &amp; paper-engineered by ANRA Collective.<br>Set in Fraunces &amp; Inter. Built with Figma, Claude and Next.js.<br>MMXXVI — Singapore &amp; Kuala Lumpur.</p>
+ <div class="hand">(keep scrolling to close the book)</div></div>`;
+function popupHTML(c){
+  const s=SCENES[c.scene];
+  return `<div class="pu p3d" id="pu-${c.id}">
+    <div class="sh"></div>
+    <div class="bd">${s.backdrop}</div>
+    <div class="wl">${s.left}</div>
+    <div class="wr">${s.right}</div>
+    ${s.center?`<div class="ct">${s.center}</div>`:""}
+    ${s.flap?`<div class="fl">${s.flap}</div>`:""}
+  </div>`;
+}
+
+/* ============ mode ============ */
+const mqSmall=matchMedia("(max-width: 899px)");
+const mqReduce=matchMedia("(prefers-reduced-motion: reduce)");
+let flatMode=mqSmall.matches||mqReduce.matches;
+
+/* ============ book construction ============ */
+const book=document.getElementById("book");
+const scroller=document.getElementById("scroller");
+const stage=document.getElementById("stage");
+const bookWrap=document.getElementById("bookWrap");
+const ribbon=document.getElementById("ribbon");
+const endcard=document.getElementById("endcard");
+const flat=document.getElementById("flat");
+const nav=document.getElementById("nav");
+const dotsWrap=document.getElementById("dots");
+let leaves=[],pops=[],storyEls=[];
+
+function buildBook(){
+  let h=`<div id="board"></div><div id="pblock" class="pageblock"></div><div id="endpaper"></div><div id="spine"></div>`;
+  for(let i=0;i<LEAVES;i++){
+    const front=i===0?coverHTML:groundHTML(CHAPTERS[i-1],i*2);
+    const back=i===LEAVES-1?finHTML:storyHTML(CHAPTERS[i],i*2+1);
+    h+=`<div class="leaf p3d" id="leaf-${i}">
+      <div class="face front bfh">${front}<div class="shade"></div></div>
+      <div class="face back bfh">${back}<div class="shade"></div></div>
+    </div>`;
+  }
+  h+=CHAPTERS.map(popupHTML).join("");
+  book.innerHTML=h;
+  leaves=[];pops=[];storyEls=[];
+  for(let i=0;i<LEAVES;i++){
+    const el=document.getElementById(`leaf-${i}`);
+    leaves.push({el,shades:el.querySelectorAll(".shade")});
+    if(i<LEAVES-1){
+      const els=[...el.querySelectorAll(".rv")].map(r=>({el:r,a:+r.dataset.a,b:+r.dataset.b}));
+      storyEls.push(els);
+    }
+  }
+  for(const c of CHAPTERS){
+    const p=document.getElementById(`pu-${c.id}`);
+    pops.push({el:p,sh:p.querySelector(".sh"),bd:p.querySelector(".bd"),wl:p.querySelector(".wl"),wr:p.querySelector(".wr"),ct:p.querySelector(".ct"),fl:p.querySelector(".fl")});
+  }
+  scroller.style.height=Math.round(TOTAL*UNIT_VH)+"vh";
+}
+
+/* ============ flat construction ============ */
+function buildFlat(){
+  let h=`<section class="coverCard"><div class="frame"></div><div class="foilT" style="font-size:26px">✳</div><div class="cbig">ANRA</div><div class="s foilT">Collective</div><div class="hand">a pop-up portfolio</div></section>`;
+  CHAPTERS.forEach((c,i)=>{
+    const s=SCENES[c.scene];
+    h+=`<section id="c-${c.id}" style="scroll-margin-top:96px">
+      <article class="paper">
+        <div class="scene" style="background:${c.soft}">
+          <div class="bd">${s.backdrop}</div><div class="wl">${s.left}</div><div class="wr">${s.right}</div>
+          ${s.center?`<div class="ct">${s.center}</div>`:""}${s.flap?`<div class="fl">${s.flap}</div>`:""}
+        </div>
+        <div class="body">
+          <div class="kick" style="color:${c.accent}">${esc(c.kicker)}</div>
+          <h2>${esc(c.title)}</h2>
+          <p class="tale">${esc(c.tale)}</p>
+          <p class="what">${esc(c.what)}</p>
+          <div class="tags">${c.tags.map(t=>`<span style="border-color:${c.accent}55">${esc(t)}</span>`).join("")}</div>
+          ${c.url?`<a class="cta" href="${c.url}" ${c.url.startsWith("mailto")?"":'target="_blank" rel="noreferrer"'} style="background:${c.accent}">${esc(c.urlLabel)} <span>↗</span></a>`:""}
+        </div>
+      </article>
+      <div class="count">${i+1} / ${CHAPTERS.length}</div>
+    </section>`;
+  });
+  h+=`<section class="endCard"><div class="frame"></div><div class="t">The End</div><p>Written, designed &amp; paper-engineered by ANRA Collective.</p><a href="mailto:anton.ranil@gmail.com">Write to the author</a></section>`;
+  flat.innerHTML=h;
+}
+
+/* ============ nav dots ============ */
+let activeChapter=-1;
+function buildDots(){
+  dotsWrap.innerHTML=CHAPTERS.map((c,i)=>`<button data-i="${i}" title="${esc(c.kicker)} — ${esc(c.title)}" aria-label="${esc(c.kicker)}: ${esc(c.title)}"><span></span></button>`).join("");
+  dotsWrap.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>jump(+b.dataset.i)));
+}
+function jump(i){
+  if(flatMode){document.getElementById(`c-${CHAPTERS[i].id}`)?.scrollIntoView({behavior:"smooth"});return}
+  const total=document.documentElement.scrollHeight-innerHeight;
+  scrollTo({top:(flipEnd(i)+DWELL*.3)/TOTAL*total,behavior:"smooth"});
+}
+function paintDots(){
+  dotsWrap.querySelectorAll("button span").forEach((s,i)=>{
+    s.style.background=i<=activeChapter?CHAPTERS[i].accent:"rgba(246,241,231,.25)";
+    s.style.transform=i===activeChapter?"scale(1.8)":"scale(1)";
+  });
+}
+
+/* ============ book frame update ============ */
+let scale=.8;
+function onResize(){scale=Math.min((innerWidth-48)/BOOK_W,(innerHeight-150)/BOOK_H,1.05);update(true)}
+function update(force){
+  if(flatMode)return;
+  const total=document.documentElement.scrollHeight-innerHeight;
+  const t=(total>0?scrollY/total:0)*TOTAL;
+  const opening=win(t,flipStart(0),flipEnd(0));
+  const e=clamp01((t-END_START)/END_LEN);
+  const rX=16-6*opening, rZ=-2.5*(1-opening), tx=-(BOOK_W/4)*(1-opening);
+  const sc=scale*(1-.4*paperE(e)), ty=40*paperE(e), op=1-win(e,.55,1);
+  bookWrap.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`;
+  bookWrap.style.opacity=op;
+  book.style.transform=`rotateX(${rX}deg) rotateZ(${rZ}deg)`;
+  document.getElementById("board").style.left=`calc(${50*(1-opening)}% - ${12*opening}px)`;
+  /* leaves */
+  for(let i=0;i<LEAVES;i++){
+    const f=clamp01(t-flipStart(i));
+    const L=leaves[i];
+    L.el.style.transform=`rotateY(${-180*f}deg)`;
+    L.el.style.zIndex=f<=.001?LEAVES+2-i:f>=.999?i+1:400;
+    const sh=.38*Math.sin(Math.PI*f);
+    L.shades.forEach(x=>x.style.opacity=sh);
+    /* story disclosure */
+    if(i<LEAVES-1){
+      const r=clamp01((t-flipEnd(i))/DWELL);
+      for(const {el,a,b} of storyEls[i]){
+        const w=win(r,a,b);
+        el.style.opacity=w;
+        el.style.transform=`translateY(${16*(1-w)}px)`;
+      }
+    }
+  }
+  /* pop-ups */
+  for(let i=0;i<SPREADS;i++){
+    const rise=win(t,flipEnd(i),flipEnd(i)+DWELL*.55);
+    const collapse=1-win(clamp01(t-flipStart(i+1)),0,.42);
+    const o=rise*collapse, P=pops[i];
+    if(o<.005){P.el.style.display="none";continue}
+    P.el.style.display="block";
+    P.el.style.opacity=win(o,.02,.24);
+    P.bd.style.transform=`translateZ(${-90+60*win(o,0,.75)}px) scale(${.86+.14*win(o,0,.8)})`;
+    P.bd.style.opacity=win(o,0,.2);
+    P.wl.style.transform=`rotateY(${52*win(o,.06,.9)}deg)`;
+    P.wr.style.transform=`rotateY(${-52*win(o,.06,.9)}deg)`;
+    const wo=win(o,.02,.16);P.wl.style.opacity=wo;P.wr.style.opacity=wo;
+    if(P.ct){P.ct.style.transform=`translateZ(${24+40*win(o,.25,1)}px) scale(${.5+.5*win(o,.25,1)})`;P.ct.style.opacity=win(o,.25,.5)}
+    if(P.fl){P.fl.style.transform=`rotateX(${-80+74*win(o,.35,1)}deg)`;P.fl.style.opacity=win(o,.3,.5)}
+    P.sh.style.opacity=.28*win(o,0,.8);
+    P.sh.style.transform=`scaleX(${.55+.45*win(o,0,.8)})`;
+  }
+  /* end card + ribbon + dots */
+  endcard.style.opacity=win(e,.55,1);
+  endcard.style.pointerEvents=e>.7?"auto":"none";
+  let idx=-1;
+  for(let i=0;i<SPREADS;i++) if(t>=flipStart(i)+FLIP*.5) idx=i;
+  if(idx!==activeChapter||force){
+    activeChapter=idx;paintDots();
+    if(idx>=0){ribbon.innerHTML=`<b>${esc(CHAPTERS[idx].kicker)}</b><i>·</i>${esc(CHAPTERS[idx].title)}`;ribbon.style.opacity=1}
+    else ribbon.style.opacity=0;
+  }
+  nav.classList.toggle("scrolled",scrollY>24);
+}
+
+/* flat-mode nav highlight */
+function updateFlat(){
+  if(!flatMode)return;
+  nav.classList.toggle("scrolled",scrollY>24);
+}
+
+/* ============ dust (canvas 2D — no dependencies) ============ */
+function startDust(){
+  if(mqReduce.matches)return;
+  const cv=document.getElementById("dust"),ctx=cv.getContext("2d");
+  let W,H;const fit=()=>{W=cv.width=innerWidth*devicePixelRatio/1.5;H=cv.height=innerHeight*devicePixelRatio/1.5};
+  fit();addEventListener("resize",fit);
+  const N=140,pts=Array.from({length:N},()=>({x:Math.random()*1,y:Math.random()*1,z:.3+Math.random()*.7,s:.1+Math.random()*.3}));
+  let mx=0,my=0;addEventListener("mousemove",e=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5},{passive:true});
+  let last=performance.now();
+  (function tick(now){
+    const dt=Math.min((now-last)/1000,.05);last=now;
+    ctx.clearRect(0,0,W,H);
+    const total=document.documentElement.scrollHeight-innerHeight;
+    const sp=total>0?scrollY/total:0;
+    for(const p of pts){
+      p.y-=p.s*dt*.05;if(p.y<-.02)p.y=1.02;
+      p.x+=Math.sin(now*.0003+p.z*10)*dt*.01;if(p.x>1.02)p.x=-.02;
+      const px=(p.x - mx*.04*p.z)*W, py=(p.y + sp*.12*p.z - my*.03*p.z)*H;
+      ctx.globalAlpha=.28*p.z;ctx.fillStyle="#e8c96a";
+      const r=1.1*p.z*(W/1000);
+      ctx.fillRect(px,py,r+1,r+1);
+    }
+    requestAnimationFrame(tick);
+  })(performance.now());
+}
+
+/* ============ init ============ */
+function init(){
+  flatMode=mqSmall.matches||mqReduce.matches;
+  if(flatMode){
+    scroller.style.display="none";flat.style.display="block";
+    if(!flat.innerHTML)buildFlat();
+    scrollTo(0,0);
+  }else{
+    flat.style.display="none";scroller.style.display="block";
+    if(!book.innerHTML)buildBook();
+    onResize();
+  }
+}
+buildDots();
+init();
+startDust();
+mqSmall.addEventListener("change",init);
+mqReduce.addEventListener("change",init);
+addEventListener("resize",onResize,{passive:true});
+let raf=null;
+addEventListener("scroll",()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=null;flatMode?updateFlat():update()})},{passive:true});
+document.getElementById("homeBtn").addEventListener("click",()=>scrollTo({top:0,behavior:"smooth"}));
+document.getElementById("again").addEventListener("click",()=>scrollTo({top:0,behavior:"smooth"}));
+addEventListener("keydown",e=>{
+  if(flatMode)return;
+  if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft")return;
+  e.preventDefault();
+  const next=e.key==="ArrowRight"?Math.min(activeChapter+1,SPREADS-1):Math.max(activeChapter-1,0);
+  jump(next);
+});
+</script>
+</body>
+</html>

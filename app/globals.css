@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@theme {
+  /* ANRA Collective — brand tokens */
+  --color-ink: #16181d;
+  --color-ink-soft: #23262e;
+  --color-paper: #f6f1e7;
+  --color-paper-deep: #ede5d4;
+  --color-foil: #c9a227;
+  --color-foil-bright: #e8c96a;
+  --color-cream: #fbf8f1;
+
+  /* chapter accents */
+  --color-briam: #773dbd;
+  --color-silbloxx: #ff2e00;
+  --color-myscholar: #2456e6;
+  --color-learnfpa: #0e7a5f;
+  --color-trash: #1f8a70;
+  --color-hutan: #1c6b3c;
+  --color-atlas: #9d174d;
+  --color-mana: #d63384;
+
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --font-hand: var(--font-shantell), "Comic Sans MS", cursive;
+
+  --ease-book: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ————— paper surface ————— */
+.paper {
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 60%),
+    var(--color-paper);
+  position: relative;
+}
+.paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* gutter shading — inner edge of each page */
+.gutter-left {
+  background-image: linear-gradient(to left, rgba(60, 45, 20, 0.22), rgba(60, 45, 20, 0.05) 9%, transparent 18%);
+}
+.gutter-right {
+  background-image: linear-gradient(to right, rgba(60, 45, 20, 0.22), rgba(60, 45, 20, 0.05) 9%, transparent 18%);
+}
+
+/* gold foil */
+.foil-text {
+  background: linear-gradient(105deg, #8a6a14 0%, var(--color-foil-bright) 30%, #f6e3a3 50%, var(--color-foil) 70%, #8a6a14 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.foil-line {
+  background: linear-gradient(90deg, transparent, var(--color-foil) 20%, var(--color-foil-bright) 50%, var(--color-foil) 80%, transparent);
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* deckled page-edge stack (side of the book block) */
+.page-block {
+  background: repeating-linear-gradient(
+    to bottom,
+    #efe8d8 0px,
+    #efe8d8 2px,
+    #ddd2ba 2.6px,
+    #efe8d8 3.4px
+  );
+}
+
+::selection {
+  background: var(--color-foil);
+  color: var(--color-ink);
+}
